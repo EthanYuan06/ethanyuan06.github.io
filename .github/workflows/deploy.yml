@@ -5,7 +5,7 @@ on:
   # By default, we use main. If your default branch is `master`, please change it below.
   push:
     branches:
-      - main
+      - master
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
