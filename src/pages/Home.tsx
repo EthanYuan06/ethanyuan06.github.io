@@ -17,9 +17,9 @@ export default function Home() {
       >
         <div className="absolute inset-0 bg-black/40"></div>
         <div className="relative z-10 text-center text-white mt-10">
-          <h1 className="text-5xl sm:text-7xl font-bold mb-4 font-serif">Agent Notes</h1>
+          <h1 className="text-5xl sm:text-7xl font-bold mb-4 font-serif">EthanYuan Blogs</h1>
           <hr className="w-24 border-t-2 border-white mx-auto my-4 opacity-75" />
-          <span className="text-xl sm:text-2xl font-light tracking-wide">With LangChain &amp; Python</span>
+          <span className="text-xl sm:text-2xl font-light tracking-wide">Keep Coding to Keep Growing ！</span>
         </div>
       </header>
 
