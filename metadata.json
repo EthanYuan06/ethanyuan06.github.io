@@ -1,0 +1,6 @@
+{
+  "name": "Hux Style React Blog",
+  "description": "A frontend React SPA styled like the classic Hux Blog, completely GitHub Pages ready.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

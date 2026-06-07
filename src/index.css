@@ -1,0 +1,12 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-serif: 'Lora', 'Times New Roman', serif;
+  --color-brand: #0085a1;
+}
+
+body {
+  @apply text-gray-800;
+}
