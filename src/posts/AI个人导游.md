@@ -6,8 +6,6 @@ date: 2026-06-14
 
 **Hello there, welcome back to EthanYuan's blog **
 
-​																										**— let's continue sharing my experience.**
-
 最近刷实习岗位，满屏都是“AI应用开发”，回头看看自己那个用 Java+SpringBoot跟着课程自学的《昴云相册》，突然觉得它像一台老式收音机——能响，但不够酷。
 
 实际上我在刷Java实习时，感觉刷不到什么很优质的JD，纯Java怕是真要跟不上时代了。于是我翻资料、啃LangChain，花两天硬怼出一个能对话、能调用工具的Agent。
