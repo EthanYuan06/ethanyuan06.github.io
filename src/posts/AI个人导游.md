@@ -1,8 +1,8 @@
-```plain
-title: 两天做了一个AI导游，再也不用担心怎么规划旅行了！
-subtitle: 朋友用了说豆包太笨了，还是我的AI好用🤣
+---
+title: 用LangChain一个白天手搓出一个旅行助手？
+subtitle: 朋友说想拿我的AI来规划旅行，觉得豆包太笨了🤣
 date: 2026-06-14
-```
+---
 
 **Hello there, welcome back to EthanYuan's blog **
 
@@ -13,13 +13,13 @@ date: 2026-06-14
 没想到给朋友一用，他直接抛弃豆包，非要拿我的demo规划他的韩国旅行。至于我怎么从零上手LangChain的？下面我会详细展开。
 
 ### 开发项目之前，我都经历了什么？
-事情要从错过暑期实习说起。那段时间焦虑得像热锅上的蚂蚁，本来想着“算了，冲一下Java实习吧”，于是疯狂背八股文，项目丢一边——典型的本末倒置。结果刷了一圈Boss直聘，发现Java实习岗位少得可怜，而AI应用开发岗倒是遍地开花，每条JD都赫然写着：“熟练Python、LangChain、LangGraph、RAG，有个人AI项目优先”。我看着自己那个用Spring AI写的情感咨询助手，陷入了沉思。
+事情要从错过暑期实习说起。那段时间焦虑得像热锅上的蚂蚁，本来想着“算了，冲一下Java实习吧”，于是疯狂背八股文，项目丢一边——典型的本末倒置。结果刷了一圈Boss直聘，发现Java实习岗位少得可怜，而AI应用开发岗倒是遍地开花，每条JD都赫然写着：**“熟练Python、LangChain、LangGraph、RAG，有个人AI项目优先”**。我看着自己那个用Spring AI写的情感咨询助手，陷入了沉思。下面是我随便找的一个AI应用开发的JD
 
 ![ScreenShot_2026-06-14_135654_011](../image/ScreenShot_2026-06-14_135654_011.png)
 
 那个情感咨询助手——我参考OpenManus的四层架构，硬是给它塞了ReAct能力，还能调用高德地图MCP规划约会地点。听起来挺唬人对吧？但实际调用成功率只有10%不到，动不动就崩，别说拿去面试了，我自己都不敢打开。（所以我后面直接放弃维护了）
 
-再就是，智能体项目应该作为后端项目的一个智能模块，不太建议单独拿出来单独做一个项目，这会让人感觉是一个玩具demo项目，而不是真正去解决了问题的智能体项目。
+再就是，智能体项目应该作为后端项目的一个智能模块，不太建议单独拿出来单独做一个项目，这会让人感觉是一个**玩具demo项目**，**而不是真正去解决了问题的智能体项目**。
 
 所以我打算先去跟课程系统学习智能体应用开发，有了基本认知和框架后，才能自定义自己的智能体应用，而我落实学习内容的方式就是——做一个能工具调用的Agent demo，AI私人导游
 
@@ -41,9 +41,9 @@ date: 2026-06-14
 
 ![ScreenShot_2026-06-14_145422_922](../image/ScreenShot_2026-06-14_145422_922.png)
 
-接着新建两个文件：requirements.txt把要用到的依赖全列上——LangChain、LangGraph、FastAPI、python-dotenv等等，一次性装好，避免后面边写边报“ModuleNotFoundError”的崩溃。另一个是.env，专门用来存API Key、Base URL这些打死也不能写死在代码里的秘密。
+接着新建两个文件：`requirements.txt`把要用到的依赖全列上——LangChain、LangGraph、FastAPI、python-dotenv等等，一次性装好，避免后面边写边报“ModuleNotFoundError”的崩溃。另一个是`.env`，专门用来存API Key、Base URL这些打死也不能写死在代码里的秘密。
 
-模型初始化这块，LangChain对DeepSeek封装得特别友好。我直接写ChatDeepSeek(model="deepseek-v4-flash")，它自己会去读.env里的密钥和地址，一行代码搞定。如果你用通义千问这类模型，就得用init_chat_model()，手动传三个参数：model、api_key、base_url。
+模型初始化这块，LangChain对DeepSeek封装得特别友好。我直接写`ChatDeepSeek(model="deepseek-v4-flash")`，它自己会去读`.env`里的密钥和地址，一行代码搞定。如果你用通义千问这类模型，就得用`init_chat_model()`，手动传三个参数：model、api_key、base_url。
 
 ```python
 # LangChain支持
@@ -59,7 +59,7 @@ llm = init_chat_model(
 
 本地调试少不了对话记忆。我配置了checkpointer，用SQLite存储会话文件——轻量、不用装数据库，特别适合在笔记本上跑。
 
-在 LangSmith 里调试 Agent 时，使用一个内存+本地磁盘的简易 checkpointer，数据存在 .langgraph_api/ 目录下。你不需要自己配置，它自动就有了，所以 checkpointer 完全可以省略。
+在 LangSmith 里调试 Agent 时，使用一个内存+本地磁盘的简易 checkpointer，数据存在` .langgraph_api/ `目录下。你不需要自己配置，它自动就有了，所以 checkpointer 完全可以省略。
 
 一旦要对接前端页面，实现真正的多轮对话，就必须引入 checkpointer 来持久化会话状态，否则用户聊完第二句，Agent 就忘了第一句说了什么。下面是我基于Sqlite创建的checkpointer：
 
@@ -150,7 +150,7 @@ system_prompt = """
 
 
 
-主角是create_agent。把上面准备好的大模型、工具列表（MCP的那些查天气、搜景点、算距离的工具）、checkpointer还有系统提示词一股脑传进去，一个能对话、能调用工具的智能体就诞生了——全程不超过10行核心代码。
+主角是`create_agent`。把上面准备好的大模型、工具列表（MCP的那些查天气、搜景点、算距离的工具）、checkpointer还有系统提示词一股脑传进去，一个能对话、能调用工具的智能体就诞生了——全程不超过10行核心代码。
 
 可能大家会有疑问：为什么同时引入工具与MCP要写成下面这样，那直接把MCP工具写在列表里不是更美观吗？
 
@@ -167,9 +167,9 @@ agent_instance = create_agent(
 
 
 
-调试阶段我用上了LangSmith。在终端敲langgraph dev，它会自动启动一个本地Web界面，你可以看到每一次LLM调用、工具返回、Token消耗，甚至哪一步错了都能精确定位。比起之前对着print瞎猜，这简直是降维打击。
+调试阶段我用上了LangSmith。在终端敲`langgraph dev`，它会自动启动一个本地Web界面，你可以看到每一次LLM调用、工具返回、Token消耗，甚至哪一步错了都能精确定位。比起之前对着print瞎猜，这简直是降维打击。
 
-最后是和前端对接。我用FastAPI写了chat.py，里面一个/chat接口接收用户消息、调用Agent、返回回复。在main.py里初始化FastAPI，写了个lifespan事件——启动时建立数据库连接和Agent实例，关闭时优雅清理。然后用include_router把路由挂到/api前缀下，最后uvicorn.run指定端口、开启reload=True热重载。改完代码自动更新，不需要重启项目。
+最后是和前端对接。我用FastAPI写了chat.py，里面一个/chat接口接收用户消息、调用Agent、返回回复。在`main.py`里初始化FastAPI，写了个lifespan事件——启动时建立数据库连接和Agent实例，关闭时优雅清理。然后用`include_router`把路由挂到/api前缀下，最后`uvicorn.run`指定端口、开启reload=True热重载。改完代码自动更新，不需要重启项目。
 
 至此，我的旅行规划助手从0到1跑通了全链路。前后其实没花几天，但自己动手把每个环节踩一遍，比看十遍教程都管用。
 
@@ -184,8 +184,8 @@ LangChain没你想的那么难，官方文档也没那么可怕。关键是别�
 
 2、就个人体验来说，LangChain开发比Spring AI顺手，几乎所有常用组件都是开箱即用，我列举一下最解决我痛点的几个案例：
 
-1. 生态组件开箱即用，大幅简化集成成本：<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">langgraph-checkpoint-redis</font>就是典型例子。相比Spring AI需要手动配置Redis连接、编写<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">RedisTemplate</font>和序列化逻辑，LangChain生态提供了封装好的<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">RedisSaver</font>，只需几行代码即可将复杂的状态持久化与Redis无缝集成，避免了重复造轮子。
-2. 高层抽象与AI编程工具协同，降低复杂智能体开发门槛：<font style="color:rgb(15, 17, 21);background-color:rgb(235, 238, 242);">create_agent</font>这类高层API封装了ReAct、工具调用等复杂模式。配合通义灵码等AI编程助手，你可以通过自然语言快速生成、理解和修改基于LangGraph的工作流代码。相比之下，从零仿制OpenManus架构时，我需要手动处理大量底层逻辑，学习成本和调试难度都显著更高。
+1. 生态组件开箱即用，大幅简化集成成本：`langgraph-checkpoint-redis`就是典型例子。相比Spring AI需要手动配置Redis连接、编写RedisTemplate和序列化逻辑，LangChain生态提供了封装好的RedisSaver，只需几行代码即可将复杂的状态持久化与Redis无缝集成，避免了重复造轮子。
+2. 高层抽象与AI编程工具协同，降低复杂智能体开发门槛：create_agent 这类高层API封装了ReAct、工具调用等复杂模式。配合通义灵码等AI编程助手，你可以通过自然语言快速生成、理解和修改基于LangGraph的工作流代码。相比之下，从零仿制OpenManus架构时，我需要手动处理大量底层逻辑，学习成本和调试难度都显著更高。
 3. 工作流编排能力灵活强大，满足高度定制化需求：LangGraph提供图结构的Agent工作流编排，让我能像搭积木一样精细控制每一步的决策、循环和状态传递。这种显式的、模块化的设计，使得我在实现复杂自主规划（如多步推理、动态工具选择）时，可以轻松插入自定义逻辑，而不会像盲目跟敲项目时那样，对整体流程失去掌控感。
 
 Anyway，代码写完了，朋友也玩上了。如果你也在折腾AI应用，希望这篇能给你一点动力。下篇见。

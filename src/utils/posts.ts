@@ -1,31 +1,120 @@
+import { load } from 'js-yaml';
+
 export interface Post {
   slug: string;
   title: string;
   date: string;
   subtitle?: string;
-  headerImage?: string;
   tags?: string[];
   body: string;
+  sourcePath: string;
+}
+
+const FRONT_MATTER_REGEX = /^---\s*\r?\n([\s\S]*?)\r?\n---\s*(?:\r?\n|$)([\s\S]*)$/;
+const POST_IMAGE_MODULES = import.meta.glob('../image/**/*.{png,jpg,jpeg,gif,webp,svg,avif}', {
+  eager: true,
+  import: 'default',
+});
+const POST_IMAGE_URLS = Object.fromEntries(
+  Object.entries(POST_IMAGE_MODULES).map(([path, url]) => [normalizeModulePath(path), url as string]),
+);
+
+function normalizeMarkdownBody(content: string): string {
+  return content
+    .replace(/\*\*([^\n*]*?)\s+\*\*/g, (_, text: string) => `**${text.trimEnd()}**`)
+    .replace(/^```([A-Za-z][A-Za-z0-9_+-]*)\s*$/gm, (_, language: string) => `\`\`\`${language.toLowerCase()}`);
+}
+
+function normalizeString(value: unknown): string | undefined {
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed || undefined;
+  }
+
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+
+  return undefined;
+}
+
+function normalizeDate(value: unknown): string | undefined {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString().slice(0, 10);
+  }
+
+  return normalizeString(value);
+}
+
+function normalizeTags(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => normalizeString(item))
+      .filter((item): item is string => Boolean(item));
+  }
+
+  const asString = normalizeString(value);
+  return asString ? asString.split(',').map((tag) => tag.trim()).filter(Boolean) : [];
+}
+
+function normalizeModulePath(path: string): string {
+  const normalized = path.replace(/\\/g, '/');
+  const segments = normalized.split('/');
+  const resolved: string[] = [];
+
+  for (const segment of segments) {
+    if (!segment || segment === '.') {
+      continue;
+    }
+
+    if (segment === '..') {
+      if (resolved.length > 0 && resolved[resolved.length - 1] !== '..') {
+        resolved.pop();
+      } else {
+        resolved.push(segment);
+      }
+      continue;
+    }
+
+    resolved.push(segment);
+  }
+
+  return resolved.join('/');
+}
+
+function dirname(path: string): string {
+  const normalized = path.replace(/\\/g, '/');
+  const index = normalized.lastIndexOf('/');
+  return index >= 0 ? normalized.slice(0, index) : '';
+}
+
+export function resolvePostAssetUrl(sourcePath: string, assetPath: string): string {
+  if (/^(?:[a-z]+:)?\/\//i.test(assetPath) || assetPath.startsWith('data:') || assetPath.startsWith('/')) {
+    return assetPath;
+  }
+
+  const resolvedPath = normalizeModulePath(`${dirname(sourcePath)}/${assetPath}`);
+  return POST_IMAGE_URLS[resolvedPath] || assetPath;
 }
 
 function parseMarkdown(rawContent: string, filename: string): Post {
-  const match = /---\s*[\r\n]+([\s\S]*?)[\r\n]+---\s*[\r\n]+([\s\S]*)/.exec(rawContent);
+  const match = FRONT_MATTER_REGEX.exec(rawContent);
 
-  let attributes: Record<string, string> = {};
+  let attributes: Record<string, unknown> = {};
   let body = rawContent;
 
   if (match) {
-    const frontmatter = match[1];
-    body = match[2];
-    attributes = frontmatter.split('\n').reduce((acc, line) => {
-      const colonIdx = line.indexOf(':');
-      if (colonIdx > -1) {
-        const key = line.slice(0, colonIdx).trim();
-        const value = line.slice(colonIdx + 1).trim();
-        acc[key] = value;
+    const frontMatter = match[1];
+    body = normalizeMarkdownBody(match[2]);
+
+    try {
+      const parsed = load(frontMatter);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        attributes = parsed as Record<string, unknown>;
       }
-      return acc;
-    }, {} as Record<string, string>);
+    } catch (error) {
+      console.warn(`Failed to parse front matter in ${filename}`, error);
+    }
   }
 
   // Generate slug from filename, removing extension and leading ./
@@ -33,12 +122,12 @@ function parseMarkdown(rawContent: string, filename: string): Post {
 
   return {
     slug,
-    title: attributes.title || 'Untitled Post',
-    date: attributes.date || '1970-01-01',
-    subtitle: attributes.subtitle,
-    headerImage: attributes.headerImage || 'https://yuluo-picture-1383397986.cos.ap-guangzhou.myqcloud.com/example.webp',
-    tags: attributes.tags ? attributes.tags.split(',').map((t) => t.trim()) : [],
+    title: normalizeString(attributes.title) || 'Untitled Post',
+    date: normalizeDate(attributes.date) || '1970-01-01',
+    subtitle: normalizeString(attributes.subtitle),
+    tags: normalizeTags(attributes.tags),
     body,
+    sourcePath: filename,
   };
 }
 

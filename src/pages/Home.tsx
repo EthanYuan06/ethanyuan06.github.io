@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { HERO_BACKGROUND_URL } from '../constants/site';
 import { getAllPosts } from '../utils/posts';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -13,11 +14,13 @@ export default function Home() {
       {/* Hero Header */}
       <header
         className="relative bg-cover bg-center bg-no-repeat w-full h-[400px] sm:h-[500px] flex px-4 sm:px-0 items-center justify-center"
-        style={{ backgroundImage: `url('https://yuluo-picture-1383397986.cos.ap-guangzhou.myqcloud.com/example.webp')` }}
+        style={{ backgroundImage: `url('${HERO_BACKGROUND_URL}')` }}
       >
         <div className="absolute inset-0 bg-black/40"></div>
         <div className="relative z-10 text-center text-white mt-10">
-          <h1 className="text-5xl sm:text-7xl font-bold mb-4 font-serif">EthanYuan Blogs</h1>
+          <h1 className="mb-4 whitespace-nowrap text-4xl font-bold font-serif sm:text-5xl">
+            EthanYuan Blogs
+          </h1>
           <hr className="w-24 border-t-2 border-white mx-auto my-4 opacity-75" />
           <span className="text-xl sm:text-2xl font-light tracking-wide">Keep Coding to Keep Growing ！</span>
         </div>
@@ -28,7 +31,7 @@ export default function Home() {
         {posts.map((post, i) => (
           <div key={post.slug} className="mb-12">
             <Link to={`/post/${post.slug}`} className="group block focus:outline-none rounded px-2 -mx-2">
-              <h2 className="text-3xl font-bold text-gray-900 group-hover:text-brand transition font-sans leading-tight mb-2">
+              <h2 className="mb-2 overflow-hidden text-ellipsis whitespace-nowrap text-2xl font-bold leading-snug text-gray-900 transition group-hover:text-brand sm:text-[2rem]">
                 {post.title}
               </h2>
               {post.subtitle && (
